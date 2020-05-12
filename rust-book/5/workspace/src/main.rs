@@ -17,6 +17,16 @@ impl Rectangle {
     fn area(&self) -> u32 {
         self.width * self.height
     }
+    fn square(size: u32) -> Rectangle {
+        Rectangle {width: size, height: size}
+    }
+}
+
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
 }
 
 fn main() {
@@ -49,6 +59,11 @@ fn main() {
     println!("{:#?}", r);
     println!("{}", area(&r));
     println!("{}", r.area());
+
+    let r2 = Rectangle::square(10);
+
+    println!("{}", r.can_hold(&r2))
+
 }
 
 fn build_user(userName: String, email: String) -> User {
