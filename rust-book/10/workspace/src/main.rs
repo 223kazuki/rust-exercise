@@ -1,4 +1,5 @@
 use std::cmp::PartialOrd;
+use std::fmt::Display;
 
 pub trait Summary {
     fn summarize(&self) -> String;
@@ -30,6 +31,10 @@ impl Summary for Tweet {
     }
 }
 
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+
 fn largest<T: PartialOrd + Copy>(list: &[T]) -> T {
     let mut largest = list[0];
     for &item in list.iter() {
@@ -38,6 +43,18 @@ fn largest<T: PartialOrd + Copy>(list: &[T]) -> T {
         }
     }
     largest
+}
+
+fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
+where
+    T: Display,
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
 }
 
 fn main() {
@@ -74,6 +91,27 @@ fn main() {
         c = longest(a.as_str(), b);
     }
     println!("{}", c);
+
+    let c;
+    {
+        let a = String::from("AAA");
+        let b = "BBB";
+        c = longest2(a.as_str(), b);
+    }
+    println!("{}", c);
+
+    let i;
+    let novel = String::from("Call me Ishmael. Some years ago...");
+    let first_sentence = novel.split('.').next().expect("Could not find a '.'");
+    i = ImportantExcerpt {
+        part: first_sentence,
+    };
+
+    println!("{:?}", i.part);
+
+    let s = String::from("A");
+    let a = longest_with_an_announcement("AAAA", "AAAAAAA", &s);
+    println!("{}", a);
 }
 
 fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
@@ -81,5 +119,13 @@ fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
         x
     } else {
         y
+    }
+}
+
+fn longest2(x: &str, y: &str) -> String {
+    if x.len() > y.len() {
+        String::from(x)
+    } else {
+        String::from(y)
     }
 }
