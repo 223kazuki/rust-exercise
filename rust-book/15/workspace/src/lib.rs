@@ -1,39 +1,3 @@
-use std::cell::RefCell;
-use std::mem::drop;
-use std::ops::Deref;
-use std::rc::Rc;
-use List::{Cons, Nil};
-
-enum List {
-    Cons(Rc<RefCell<i32>>, Rc<List>),
-    Nil,
-}
-
-struct MyBox<T>(T);
-
-impl<T> MyBox<T> {
-    fn new(x: T) -> MyBox<T> {
-        MyBox(x)
-    }
-}
-
-impl<T> Deref for MyBox<T> {
-    type Target = T;
-    fn deref(&self) -> &T {
-        &self.0
-    }
-}
-
-struct CustomStartPointer {
-    data: String,
-}
-
-impl Drop for CustomStartPointer {
-    fn drop(&mut self) {
-        println!("Drop!");
-    }
-}
-
 pub trait Messenger {
     fn send(&self, msg: &str);
 }
@@ -60,6 +24,7 @@ where
         self.value = value;
 
         let percentage_of_max = self.value as f64 / self.max as f64;
+
         if percentage_of_max >= 0.75 && percentage_of_max < 0.9 {
             // 警告: 割り当ての75％以上を使用してしまいました
             self.messenger
@@ -75,26 +40,37 @@ where
     }
 }
 
-fn main() {
-    let b = Box::new(5);
-    println!("{}", b);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cell::RefCell;
 
-    let x = 5;
-    let y = MyBox::new(x);
-
-    println!("{}", *y);
-
-    let c = CustomStartPointer {
-        data: String::from("my stuff"),
-    };
-    {
-        let d = CustomStartPointer {
-            data: String::from("other stuff"),
-        };
+    struct MockMessenger {
+        sent_messages: RefCell<Vec<String>>,
     }
-    drop(c);
 
-    println!("CustomStartPointers created.");
+    impl MockMessenger {
+        fn new() -> MockMessenger {
+            MockMessenger {
+                sent_messages: RefCell::new(vec![]),
+            }
+        }
+    }
 
-    let valus = Rc::new (RefCell::new (5))
+    impl Messenger for MockMessenger {
+        fn send(&self, message: &str) {
+            let mut one_borrow = self.sent_messages.borrow_mut();
+            let mut two_borrow = self.sent_messages.borrow_mut();
+
+            one_borrow.push(String::from(message));
+            two_borrow.push(String::from(message));
+        }
+    }
+
+    #[test]
+    fn it_sends_an_over_75_percent_warning_message() {
+        // --snip--
+
+        assert_eq!(mock_messenger.sent_messages.borrow().len(), 1);
+    }
 }
